@@ -136,8 +136,7 @@ DetectorNode::DetectorNode(rclcpp::NodeOptions options)
     rclcpp::ParameterValue(impl_->nms_threshold_),
     impl_->nms_threshold_desc_).get<double>();
 
-  set_on_parameters_set_callback(
-    std::bind(&DetectorNodePrivate::on_parameters_change, &*impl_, std::placeholders::_1));
+  //set_on_parameters_set_callback(std::bind(&DetectorNodePrivate::on_parameters_change, &*impl_, std::placeholders::_1));
 
   // TODO(sloretz) raise if user tried to initialize node with undeclared parameters
 
