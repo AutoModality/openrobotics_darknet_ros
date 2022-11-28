@@ -20,6 +20,7 @@
 
 #include "rclcpp/node.hpp"
 #include "openrobotics_darknet_ros/visibility_node.hpp"
+#include <rclcpp/rclcpp.hpp>
 
 
 namespace openrobotics
@@ -29,18 +30,20 @@ namespace darknet_ros
 // Forward declaration
 class DetectorNodePrivate;
 
-class DetectorNode : public rclcpp::Node
+class DetectorNode
 {
 public:
   /// \brief Create a node that uses ROS parameters to get the network
   DARKNET_ROS_NODE_PUBLIC
-  explicit DetectorNode(rclcpp::NodeOptions options);
+  explicit DetectorNode(rclcpp::Node::SharedPtr node);
 
   DARKNET_ROS_NODE_PUBLIC
   virtual ~DetectorNode();
 
 private:
   std::unique_ptr<DetectorNodePrivate> impl_;
+  
+  rclcpp::Node::SharedPtr node_;
 };
 }  // namespace darknet_ros
 }  // namespace openrobotics

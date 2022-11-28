@@ -17,14 +17,17 @@
 #include "openrobotics_darknet_ros/detector_node.hpp"
 #include "rclcpp/rclcpp.hpp"
 
+std::string NODE_NAME_ ("detector_node");
+
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
 
-  rclcpp::NodeOptions options;
-  auto detector_node = std::make_shared<openrobotics::darknet_ros::DetectorNode>(options);
 
-  rclcpp::spin(detector_node);
+  std::shared_ptr<rclcpp::Node> node = std::make_shared<rclcpp::Node>(NODE_NAME_);
+  auto detector_node = std::make_shared<openrobotics::darknet_ros::DetectorNode>(node);
+
+  rclcpp::spin(node);
 
   rclcpp::shutdown();
   return 0;

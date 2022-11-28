@@ -24,6 +24,7 @@
 #include "openrobotics_darknet_ros/parse.hpp"
 #include "rcl_interfaces/msg/parameter_descriptor.hpp"
 #include "rclcpp/parameter_value.hpp"
+#include <am_utils/am_ros2_utility.h>
 
 namespace openrobotics
 {
@@ -85,56 +86,71 @@ public:
   rcl_interfaces::msg::ParameterDescriptor nms_threshold_desc_;
 };
 
-DetectorNode::DetectorNode(rclcpp::NodeOptions options)
-: rclcpp::Node("detector_node", options), impl_(new DetectorNodePrivate)
+DetectorNode::DetectorNode(rclcpp::Node::SharedPtr node): node_(node)
 {
+  impl_ = std::make_unique<openrobotics::darknet_ros::DetectorNodePrivate>();
+  
+  
   // Read-only input parameters: cfg, weights, classes
-  rcl_interfaces::msg::ParameterDescriptor network_cfg_desc;
-  network_cfg_desc.description = "Path to config file describing network";
-  network_cfg_desc.type = rcl_interfaces::msg::ParameterType::PARAMETER_STRING;
-  network_cfg_desc.read_only = true;
-  network_cfg_desc.name = "network.config";
-  const std::string network_config_path = declare_parameter(
-    network_cfg_desc.name,
-    rclcpp::ParameterValue(),
-    network_cfg_desc).get<std::string>();
+  //rcl_interfaces::msg::ParameterDescriptor network_cfg_desc;
+  //network_cfg_desc.description = "Path to config file describing network";
+  //network_cfg_desc.type = rcl_interfaces::msg::ParameterType::PARAMETER_STRING;
+  //network_cfg_desc.read_only = true;
+  //network_cfg_desc.name = ;
+  
+  
+  
+  std::string network_config_path = "./yolov3-tiny.cfg";
+  am::getParam<std::string>(node_, "network.config", network_config_path, network_config_path);
+  
+  std::string network_weights_path = "./yolov3-tiny.weights";
+  am::getParam<std::string>(node_, "network.weights", network_weights_path, network_weights_path);
 
-  rcl_interfaces::msg::ParameterDescriptor network_weights_desc;
-  network_weights_desc.description = "Path to file describing network weights";
-  network_weights_desc.type = rcl_interfaces::msg::ParameterType::PARAMETER_STRING;
-  network_weights_desc.read_only = true;
-  network_weights_desc.name = "network.weights";
-  const std::string network_weights_path = declare_parameter(
-    network_weights_desc.name,
-    rclcpp::ParameterValue(),
-    network_weights_desc).get<std::string>();
+  std::string network_class_names_path = "./coco.names";
+  am::getParam<std::string>(node_, "network.class_names", network_class_names_path, network_class_names_path);
+  
+  am::getParam<double>(node_, "detection.threshold", impl_->threshold_, impl_->threshold_);
+  
+  am::getParam<double>(node_, "detection.nms_threshold", impl_->nms_threshold_, impl_->nms_threshold_);
+  
+  //rcl_interfaces::msg::ParameterDescriptor network_weights_desc;
+  //network_weights_desc.description = "Path to file describing network weights";
+  //network_weights_desc.type = rcl_interfaces::msg::ParameterType::PARAMETER_STRING;
+  //network_weights_desc.read_only = true;
+  //network_weights_desc.name = "network.weights";
+  //const std::string network_weights_path = declare_parameter(
+  //  network_weights_desc.name,
+  //  rclcpp::ParameterValue(),
+  //  network_weights_desc).get<std::string>();
 
-  rcl_interfaces::msg::ParameterDescriptor network_class_names_desc;
-  network_class_names_desc.description = "Path to file with class names (one per line)";
-  network_class_names_desc.type = rcl_interfaces::msg::ParameterType::PARAMETER_STRING;
-  network_class_names_desc.read_only = true;
-  network_class_names_desc.name = "network.class_names";
-  const std::string network_class_names_path = declare_parameter(
-    network_class_names_desc.name,
-    rclcpp::ParameterValue(),
-    network_class_names_desc).get<std::string>();
 
-  impl_->threshold_desc_.description = "Minimum detection confidence [0.0, 1.0]";
-  impl_->threshold_desc_.type = rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE;
-  impl_->threshold_desc_.name = "detection.threshold";
-  impl_->threshold_ = declare_parameter(
-    impl_->threshold_desc_.name,
-    rclcpp::ParameterValue(impl_->threshold_),
-    impl_->threshold_desc_).get<double>();
 
-  impl_->nms_threshold_desc_.description =
-    "Non Maximal Suppression threshold for filtering overlapping boxes [0.0, 1.0]";
-  impl_->nms_threshold_desc_.type = rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE;
-  impl_->nms_threshold_desc_.name = "detection.nms_threshold";
-  impl_->nms_threshold_ = declare_parameter(
-    impl_->nms_threshold_desc_.name,
-    rclcpp::ParameterValue(impl_->nms_threshold_),
-    impl_->nms_threshold_desc_).get<double>();
+  //rcl_interfaces::msg::ParameterDescriptor network_class_names_desc;
+  //network_class_names_desc.description = "Path to file with class names (one per line)";
+  //network_class_names_desc.type = rcl_interfaces::msg::ParameterType::PARAMETER_STRING;
+  //network_class_names_desc.read_only = true;
+  //network_class_names_desc.name = "network.class_names";
+  //const std::string network_class_names_path = declare_parameter(
+  //  network_class_names_desc.name,
+  //  rclcpp::ParameterValue(),
+  //  network_class_names_desc).get<std::string>();
+
+  //impl_->threshold_desc_.description = "Minimum detection confidence [0.0, 1.0]";
+  //impl_->threshold_desc_.type = rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE;
+  //impl_->threshold_desc_.name = "detection.threshold";
+  //impl_->threshold_ = declare_parameter(
+  //  impl_->threshold_desc_.name,
+  //  rclcpp::ParameterValue(impl_->threshold_),
+  //  impl_->threshold_desc_).get<double>();
+
+  //impl_->nms_threshold_desc_.description =
+  //  "Non Maximal Suppression threshold for filtering overlapping boxes [0.0, 1.0]";
+  //impl_->nms_threshold_desc_.type = rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE;
+  //impl_->nms_threshold_desc_.name = "detection.nms_threshold";
+  //impl_->nms_threshold_ = declare_parameter(
+  //  impl_->nms_threshold_desc_.name,
+  //  rclcpp::ParameterValue(impl_->nms_threshold_),
+  //  impl_->nms_threshold_desc_).get<double>();
 
   //set_on_parameters_set_callback(std::bind(&DetectorNodePrivate::on_parameters_change, &*impl_, std::placeholders::_1));
 
@@ -145,11 +161,11 @@ DetectorNode::DetectorNode(rclcpp::NodeOptions options)
     new DetectorNetwork(network_config_path, network_weights_path, class_names));
 
   // Ouput topic ~/detections [vision_msgs/msg/Detection2DArray]
-  impl_->detections_pub_ = this->create_publisher<vision_msgs::msg::Detection2DArray>(
+  impl_->detections_pub_ = node_->create_publisher<vision_msgs::msg::Detection2DArray>(
     "~/detections", 1);
 
   // Input topic ~/images [sensor_msgs/msg/Image]
-  impl_->image_sub_ = this->create_subscription<sensor_msgs::msg::Image>(
+  impl_->image_sub_ = node_->create_subscription<sensor_msgs::msg::Image>(
     "~/images", 12, std::bind(&DetectorNodePrivate::on_image_rx, &*impl_, std::placeholders::_1));
 }
 
@@ -159,6 +175,6 @@ DetectorNode::~DetectorNode()
 }  // namespace darknet_ros
 }  // namespace openrobotics
 
-#include "rclcpp_components/register_node_macro.hpp"
+//#include "rclcpp_components/register_node_macro.hpp"
 
-RCLCPP_COMPONENTS_REGISTER_NODE(openrobotics::darknet_ros::DetectorNode)
+//RCLCPP_COMPONENTS_REGISTER_NODE(openrobotics::darknet_ros::DetectorNode)
