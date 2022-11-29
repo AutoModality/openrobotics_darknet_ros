@@ -144,7 +144,7 @@ DetectorNetwork::detect(
   for (int i = 0; i < num_detections; ++i) {
     auto & detection = darknet_detections[i];
     output_detections->detections.emplace_back();
-    auto & detection_ros = output_detections->detections.back();
+    vision_msgs::msg::Detection2D & detection_ros = output_detections->detections.back();
 
     // Copy probabilities of each class
     for (int cls = 0; cls < detection.classes; ++cls) {
@@ -163,8 +163,8 @@ DetectorNetwork::detect(
     }
 
     // Copy bounding box, darknet uses center of bounding box too
-    detection_ros.bbox.center.x = detection.bbox.x;
-    detection_ros.bbox.center.y = detection.bbox.y;
+    detection_ros.bbox.center.position.x = detection.bbox.x;
+    detection_ros.bbox.center.position.y = detection.bbox.y;
     detection_ros.bbox.size_x = detection.bbox.w;
     detection_ros.bbox.size_y = detection.bbox.h;
   }
