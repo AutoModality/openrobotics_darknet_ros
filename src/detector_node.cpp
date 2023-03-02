@@ -86,7 +86,7 @@ public:
   rcl_interfaces::msg::ParameterDescriptor nms_threshold_desc_;
 };
 
-DetectorNode::DetectorNode(rclcpp::Node::SharedPtr node): node_(node)
+DetectorNode::DetectorNode()
 {
   impl_ = std::make_unique<openrobotics::darknet_ros::DetectorNodePrivate>();
   
@@ -101,17 +101,17 @@ DetectorNode::DetectorNode(rclcpp::Node::SharedPtr node): node_(node)
   
   
   std::string network_config_path = "./yolov3-tiny.cfg";
-  am::getParam<std::string>(node_, "network.config", network_config_path, network_config_path);
+  am::getParam<std::string>("network.config", network_config_path, network_config_path);
   
   std::string network_weights_path = "./yolov3-tiny.weights";
-  am::getParam<std::string>(node_, "network.weights", network_weights_path, network_weights_path);
+  am::getParam<std::string>("network.weights", network_weights_path, network_weights_path);
 
   std::string network_class_names_path = "./coco.names";
-  am::getParam<std::string>(node_, "network.class_names", network_class_names_path, network_class_names_path);
+  am::getParam<std::string>("network.class_names", network_class_names_path, network_class_names_path);
   
-  am::getParam<double>(node_, "detection.threshold", impl_->threshold_, impl_->threshold_);
+  am::getParam<double>("detection.threshold", impl_->threshold_, impl_->threshold_);
   
-  am::getParam<double>(node_, "detection.nms_threshold", impl_->nms_threshold_, impl_->nms_threshold_);
+  am::getParam<double>("detection.nms_threshold", impl_->nms_threshold_, impl_->nms_threshold_);
   
   //rcl_interfaces::msg::ParameterDescriptor network_weights_desc;
   //network_weights_desc.description = "Path to file describing network weights";
@@ -161,11 +161,11 @@ DetectorNode::DetectorNode(rclcpp::Node::SharedPtr node): node_(node)
     new DetectorNetwork(network_config_path, network_weights_path, class_names));
 
   // Ouput topic ~/detections [vision_msgs/msg/Detection2DArray]
-  impl_->detections_pub_ = node_->create_publisher<vision_msgs::msg::Detection2DArray>(
+  impl_->detections_pub_ = am::Node::node->create_publisher<vision_msgs::msg::Detection2DArray>(
     "~/detections", 1);
 
   // Input topic ~/images [sensor_msgs/msg/Image]
-  impl_->image_sub_ = node_->create_subscription<sensor_msgs::msg::Image>(
+  impl_->image_sub_ = am::Node::node->create_subscription<sensor_msgs::msg::Image>(
     "~/images", 12, std::bind(&DetectorNodePrivate::on_image_rx, &*impl_, std::placeholders::_1));
 }
 

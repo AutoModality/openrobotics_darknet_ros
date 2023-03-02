@@ -18,6 +18,7 @@ find_package(rclcpp_components REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(vision_msgs REQUIRED)
 find_package(am_utils REQUIRED)
+find_package(GTest REQUIRED)
 
 add_library(openrobotics_darknet_ros SHARED
   src/detector_network.cpp
@@ -37,7 +38,7 @@ ament_target_dependencies(detector_node PUBLIC
   "rclcpp"
   "rclcpp_components"
   am_utils)
-target_link_libraries(detector_node PUBLIC openrobotics_darknet_ros)
+target_link_libraries(detector_node PUBLIC openrobotics_darknet_ros gtest)
 rclcpp_components_register_nodes(detector_node "openrobotics::darknet_ros::DetectorNode")
 
 add_executable(detector_node_main

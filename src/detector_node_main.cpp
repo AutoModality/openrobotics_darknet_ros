@@ -15,19 +15,22 @@
 #include <memory>
 
 #include "openrobotics_darknet_ros/detector_node.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include <am_utils/am_ros2_utility.h>
 
 std::string NODE_NAME_ ("detector_node");
+
+
+std::shared_ptr<am::AMLifeCycle> am::Node::node;
 
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
 
 
-  std::shared_ptr<rclcpp::Node> node = std::make_shared<rclcpp::Node>(NODE_NAME_);
-  auto detector_node = std::make_shared<openrobotics::darknet_ros::DetectorNode>(node);
+  am::Node::node = std::make_shared<am::AMLifeCycle>(NODE_NAME_);
+  auto detector_node = std::make_shared<openrobotics::darknet_ros::DetectorNode>();
 
-  rclcpp::spin(node);
+  rclcpp::spin(am::Node::node);
 
   rclcpp::shutdown();
   return 0;
